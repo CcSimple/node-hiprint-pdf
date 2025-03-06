@@ -1,0 +1,16 @@
+*.md
+!README.md
+*.zip
+*.rar
+*.tgz
+*.tar
+*.log
+*.tmp
+*.bak
+node_modules/
+pnpm-debug.log
+pnpm-lock.yaml
+.git/
+.DS_Store
+.vscode/
+.dockerignore

@@ -1,0 +1,65 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" type="text/css" href="https://unpkg.com/vue-plugin-hiprint@0.0.58/dist/print-lock.css" />
+    <link rel="stylesheet" type="text/css" media="print" href="https://unpkg.com/vue-plugin-hiprint@0.0.58/dist/print-lock.css" />
+    <!-- 如果觉得慢,可换成本地链接 -->
+    <script src="https://unpkg.com/jquery@3.6.1/dist/jquery.js"></script>
+    <script src="https://unpkg.com/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
+    <script src="https://unpkg.com/@claviska/jquery-minicolors@2.3.6/jquery.minicolors.min.js"></script>
+    <script src="https://unpkg.com/socket.io-client@4.5.1/dist/socket.io.min.js"></script>
+    <script src="https://unpkg.com/browse/canvg@4.0.1/dist/index.cjs"></script>
+    <script src="https://unpkg.com/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+    <script src="https://unpkg.com/html2canvas@1.4.1/dist/html2canvas.js"></script>
+    <script src="https://unpkg.com/nzh@1.0.13/dist/nzh.min.js"></script>
+    <script src="https://unpkg.com/bwip-js@4.5.1/dist/bwip-js.js"></script>
+    <script src="https://unpkg.com/vue-plugin-hiprint@0.0.58/dist/vue-plugin-hiprint.js"></script>
+    <!-- axios网络请求 -->
+    <script src="https://unpkg.com/axios@1.6.7/dist/axios.min.js"></script>
+  </head>
+
+  <body>
+    <div id="template"></div>
+  </body>
+  <script defer>
+    window.autoConnect = false;
+    const templateDiv = document.getElementById("template");
+    function renderHtml() {
+      hiprint.init({});
+      // 模拟网络请求然后,创建模板
+      const search = window.location.search;
+      const id = search.split("=")[1];
+      console.log(id);
+      if (!id) return;
+      axios
+        .get("/template", {
+          params: {
+            id: id,
+          },
+        })
+        .then((res) => {
+          console.log(res);
+          // // 创建模板
+          if (res.status == 200 && res.data.code == 1) {
+            var data = res.data.data;
+            var hiprintTemplate = new hiprint.PrintTemplate({
+              template: data.template,
+            });
+            // 渲染模板
+            let htmlJq = hiprintTemplate.getHtml(data.printData);
+            templateDiv.appendChild(htmlJq[0]);
+          } else {
+            templateDiv.appendChild($(`<div class="hiprint-printTemplate">获取模板失败:${res}</div>`)[0]);
+          }
+        })
+        .catch((error) => {
+          console.log(error);
+          templateDiv.appendChild($(`<div class="hiprint-printTemplate">${error}</div>`)[0]);
+        });
+    }
+    renderHtml();
+  </script>
+</html>
