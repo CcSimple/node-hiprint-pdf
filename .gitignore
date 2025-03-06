@@ -1,5 +1,6 @@
 !public/vue-plugin-hiprint/
 public/files/
+package-lock.json
 
 # File created using '.gitignore Generator' for Visual Studio Code: https://bit.ly/vscode-gig
 # Created by https://www.toptal.com/developers/gitignore/api/node

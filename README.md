@@ -22,6 +22,12 @@ npm i --registry https://registry.npmmirror.com
 npm run start
 ```
 
+## docker
+
+```bash
+docker compose up -d
+```
+
 ## api
 
 | type | api   | desc  | options                                                        |
