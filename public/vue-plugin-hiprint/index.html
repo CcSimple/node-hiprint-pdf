@@ -22,11 +22,11 @@
   </head>
 
   <body>
-    <div id="templateKF"></div>
+    <div id="hiprintTemplate" class="hiprintTemplate"></div>
   </body>
   <script defer>
     window.autoConnect = false;
-    const templateDiv = document.getElementById("templateKF");
+    const templateDiv = document.querySelector("#hiprintTemplate.hiprintTemplate")
     function renderHtml() {
       hiprint.init({});
       // 模拟网络请求然后,创建模板
