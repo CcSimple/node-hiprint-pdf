@@ -47,36 +47,39 @@ export default async function (fastify, opts) {
       const cacheId = randomId();
       const cacheTime = request.query.time || 1 * 60; // 60s
       const data = request.body;
+      const host = `${request.protocol}://${request.hostname}`;
+      const url = data.url || `${host}/vue-plugin-hiprint/index.html`;
+      let fileUrl = ''
+
       console.log("cacheId", cacheId);
       console.log("query", request.query);
       console.log("data", data);
-      const host = `${request.protocol}://${request.hostname}`;
-      const url = data.url || `${host}/vue-plugin-hiprint/index.html`;
+
       fastify.cacheman.set(cacheId, data, cacheTime, (err, value) => {
         if (err) throw err;
       });
+
       // 更多参数见: https://pptr.dev/api/puppeteer.screenshotoptions
-      const name = `/${todayDir()}/${cacheId}.png`;
       const options = {
         fullPage: true,
-        path: `${publicPath}${name}`, // 保存路径, 没有则不会保存文件, 保存文件 存在 io 异步问题
         ...data.options,
       };
-      if (data.noFile) {
-        delete options.path;
+      // 需要本地落盘
+      if (!data.noFile) {
+        const name = `/${todayDir()}/${cacheId}.png`;
+        options.path = `${publicPath}${name}`; // 保存路径, 没有则不会保存文件, 保存文件 存在 io 异步问题
+        fileUrl = `${host}${name}`; // 返回保存的路径
       }
       console.log(options);
+
       const phe = new PuppeteerHtmlExport();
-      const base64 = await phe.screenshot(`${url}?id=${cacheId}`, options);
+      const rawBase64 = await phe.screenshot(`${url}?id=${cacheId}`, options);
+      const pngUri =`data:image/png;base64,${rawBase64}`
       const res = {
         code: 1,
         msg: "success",
-        data: `${host}${name}`, // 返回保存的路径
-        // data: `data:image/png;base64,${base64}`,
+        data: data.noFile ? pngUri : fileUrl
       };
-      if (data.noFile) {
-        res.data = `data:image/png;base64,${base64}`;
-      }
       reply.send(res);
     } catch (error) {
       console.log("createImage error", error);
@@ -93,24 +96,29 @@ export default async function (fastify, opts) {
       const cacheId = randomId();
       const cacheTime = request.query.time || 1 * 60; // 60s
       const data = request.body;
+      const host = `${request.protocol}://${request.hostname}`;
+      const url = data.url || `${host}/vue-plugin-hiprint/index.html`;
+      let fileUrl = ''
+
       console.log("cacheId", cacheId);
       console.log("query", request.query);
       console.log("data", data);
-      const host = `${request.protocol}://${request.hostname}`;
-      const url = data.url || `${host}/vue-plugin-hiprint/index.html`;
+
       fastify.cacheman.set(cacheId, data, cacheTime, (err, value) => {
         if (err) throw err;
       });
+
       // 更多参数见: https://pptr.dev/api/puppeteer.pdfoptions
-      const name = `/${todayDir()}/${cacheId}.pdf`;
       const options = {
         // width: "240mm",
         // height: "140mm",
-        path: `${publicPath}${name}`, // 保存路径, 没有则不会保存文件, 保存文件 存在 io 异步问题
         ...data.options,
       };
-      if (data.noFile) {
-        delete options.path;
+      // 需要本地落盘
+      if (!data.noFile) {
+        const name = `/${todayDir()}/${cacheId}.pdf`;
+        options.path = `${publicPath}${name}`; // 保存路径, 没有则不会保存文件, 保存文件 存在 io 异步问题
+        fileUrl = `${host}${name}`; // 返回保存的路径
       }
       console.log(options);
       const phe = new PuppeteerHtmlExport();
@@ -118,12 +126,8 @@ export default async function (fastify, opts) {
       const res = {
         code: 1,
         msg: "success",
-        data: `${host}${name}`, // 保存文件的路径
-        // data: buffer, // 返回 buffer
+        data: data.noFile ? buffer : fileUrl
       };
-      if (data.noFile) {
-        res.data = buffer;
-      }
       reply.send(res);
     } catch (error) {
       console.log("createPdf error", error);
